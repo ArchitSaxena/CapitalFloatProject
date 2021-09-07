@@ -11,11 +11,16 @@ namespace CapitalFloatProject.DataAccess
     {
         public CapitalFloatDataContext( DbContextOptions<CapitalFloatDataContext> dbContextOptions): base(dbContextOptions){ }
         public DbSet<Persons> persons { get; set; }
+        public DbSet<Student> students { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Persons>(builder =>
             {
                 builder.ToTable("Persons").HasKey(x => x.PersonID);
+            });
+            modelBuilder.Entity<Student>(builder =>
+            {
+                builder.ToTable("Student").HasKey(x => x.StudentID);
             });
         }
     }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CapitalFloatProject.DataAccess;
 using CapitalFloatProject.Models;
+using Microsoft.Extensions.Logging;
 
 namespace CapitalFloatProject.Controllers
 {
@@ -15,38 +16,33 @@ namespace CapitalFloatProject.Controllers
     public class PersonsController : ControllerBase
     {
         private readonly CapitalFloatDataContext _context;
-
-        public PersonsController(CapitalFloatDataContext context)
+        private readonly ILogger<PersonsController> _logger;
+        public PersonsController(CapitalFloatDataContext context, ILogger<PersonsController> logger)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // GET: api/Persons
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Persons>>> Getpersons()
+        [HttpGet("GetPersons")]
+        public async Task<ActionResult<IEnumerable<Persons>>> GetPersons()
         {
             return await _context.persons.ToListAsync();
         }
 
         // GET: api/Persons/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Persons>> GetPersons(int id)
+        [HttpGet("GetPersonsById/{id}")]
+        public async Task<ActionResult<Persons>> GetPersonsById(int id)
         {
             var persons = await _context.persons.FindAsync(id);
-            var personsFound = _context.persons.Where(x=> x.PersonID==id);
             if (persons == null)
             {
-                return NotFound();
+               return NotFound();
             }
-
             return persons;
         }
 
-        // PUT: api/Persons/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPersons(int id, Persons persons)
+        [HttpPut("UpdatePersons/{id}")]
+        public async Task<IActionResult> UpdatePersons(int id, Persons persons)
         {
             if (id != persons.PersonID)
             {
@@ -74,16 +70,21 @@ namespace CapitalFloatProject.Controllers
             return NoContent();
         }
 
-        // POST: api/Persons
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPost]
+
+        [HttpPost("PostPersons")]
         public async Task<ActionResult<Persons>> PostPersons(Persons persons)
         {
-            _context.persons.Add(persons);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetPersons", new { id = persons.PersonID }, persons);
+            try
+            {
+                _context.persons.Add(persons);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction("GetPersons", new { id = persons.PersonID }, persons);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogInformation($"Exception- {ex}");
+            }
+            return NoContent();
         }
 
         // DELETE: api/Persons/5
