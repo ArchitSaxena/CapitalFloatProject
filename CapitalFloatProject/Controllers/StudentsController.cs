@@ -27,7 +27,6 @@ namespace CapitalFloatProject.Controllers
         [HttpGet("Getstudents")]
         public async Task<ActionResult<IEnumerable<Student>>> Getstudents()
         {
-
             _logger.LogInformation("Invoke Getstudents");
             var startTime = DateTime.Now;
             var result= await _context.students.ToListAsync();
